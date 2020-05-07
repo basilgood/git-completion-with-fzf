@@ -28,8 +28,6 @@ _fzf_complete_git() {
           $ARGS == 'git checkout'* || \
           $ARGS == 'git reset'* ]]; then
         _fzf_complete "--reverse --multi" "$@" < <(__git_log)
-    else
-        eval "zle ${fzf_default_completion:-expand-or-complete}"
     fi
 }
 
@@ -48,7 +46,7 @@ gh () {
 }
 
 fzf-down() {
-  fzf --height 50% "$@" --border
+  fzf --height 90% "$@" --reverse
 }
 
 is_in_git_repo() {
@@ -102,44 +100,41 @@ gs() {
   cut -d: -f1
 }
 
-# Extra
-gp() {
-  ps -ef | fzf-down --header-lines 1 --info inline --layout reverse --multi |
-    awk '{print $2}'
-}
-
-__fzf_history() {
-  builtin history -n;
-  builtin typeset \
-    READLINE_LINE_NEW="$(
-      HISTTIMEFORMAT= builtin history |
-        command fzf +s --tac +m -n2..,.. --tiebreak=index --toggle-sort=ctrl-r |
-        command sed '
-              /^ *[0-9]/ {
-              s/ *\([0-9]*\) .*/!\1/;
-              b end;
-            };
-          d;
-          : end
-          '
-          )";
-
-          if
-            [[ -n $READLINE_LINE_NEW ]]
-          then
-            builtin bind '"\er": redraw-current-line'
-            builtin bind '"\e^": magic-space'
-            READLINE_LINE=${READLINE_LINE:+${READLINE_LINE:0:READLINE_POINT}}${READLINE_LINE_NEW}${READLINE_LINE:+${READLINE_LINE:READLINE_POINT}}
-            READLINE_POINT=$(( READLINE_POINT + ${#READLINE_LINE_NEW} ))
-          else
-            builtin bind '"\er":'
-            builtin bind '"\e^":'
-          fi
-        }
-
-builtin set -o histexpand;
-builtin bind -x '"\C-x1": __fzf_history';
-builtin bind '"\C-r": "\C-x1\e^\er"'
+# __fzf_history() {
+#   builtin history -n;
+#   builtin typeset \
+#     READLINE_LINE_NEW="$(
+#       HISTTIMEFORMAT= builtin history |
+#         command fzf +s --height 40% \
+#         --reverse --tac +m -n2..,.. \
+#         --tiebreak=index \
+#         --toggle-sort=ctrl-r |
+#         command sed '
+#               /^ *[0-9]/ {
+#               s/ *\([0-9]*\) .*/!\1/;
+#               b end;
+#             };
+#           d;
+#           : end
+#           '
+#           )";
+#
+#           if
+#             [[ -n $READLINE_LINE_NEW ]]
+#           then
+#             builtin bind '"\er": redraw-current-line'
+#             builtin bind '"\e^": magic-space'
+#             READLINE_LINE=${READLINE_LINE:+${READLINE_LINE:0:READLINE_POINT}}${READLINE_LINE_NEW}${READLINE_LINE:+${READLINE_LINE:READLINE_POINT}}
+#             READLINE_POINT=$(( READLINE_POINT + ${#READLINE_LINE_NEW} ))
+#           else
+#             builtin bind '"\er":'
+#             builtin bind '"\e^":'
+#           fi
+#         }
+#
+# builtin set -o histexpand;
+# builtin bind -x '"\C-x1": __fzf_history';
+# builtin bind '"\C-r": "\C-x1\e^\er"'
 
 if [[ $- =~ i ]]; then
   bind '"\er": redraw-current-line'
