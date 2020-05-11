@@ -40,3 +40,42 @@ __ehc() {
     bind '"\e^":'
   fi
 }
+
+# explorer
+ez() {
+  files=()
+  while IFS= read -r -d '' file; do
+    files+=("$file")
+  done < <(fzf --multi --print0)
+
+  (( ${#files} )) || return
+  "${VISUAL:-${EDITOR:-vi}}" "$@" "${files[@]}"
+}
+
+# watch dir with inotify-tools
+watchdir() {
+  inotifywait -rme modify --format '%w%f' "$1"
+}
+# Depends on inotifywait, from inotify-tools
+
+# Usage: watchrun dir... -- command...
+# e.g. watchrun src -- ctags -a
+
+# dirs=()
+# until [[ $1 == -- ]]; do
+#   dirs+=("$1")
+#   shift
+# done
+# shift
+# rest=("$@")
+#
+# inotifywait -rme modify --format '%w%f' "${dirs[@]}" | while read -r filename; do
+# <&2 echo "Running for ${filename##*/}..."
+# "${rest[@]}" "$filename"
+# <&2 echo "Done."
+# done
+
+# for existing man pages
+fzf_apropos() {
+  apropos '' | fzf --preview-window=up:50% --preview 'echo {} | cut -f 1 -d " " | xargs man' | cut -f 1 -d " "
+}
